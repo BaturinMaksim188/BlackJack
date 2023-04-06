@@ -80,6 +80,9 @@ def lose():
 
         
 def play():
+    global player, dealer
+    player, dealer = [], []
+    picked = []
     playercardlabel.config(text="")
     dealercardlabel.config(text="")
     dealerscorelabel.config(text="У диллера нет карт.")
