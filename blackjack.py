@@ -1,7 +1,9 @@
 from random import randrange
 from tkinter import *
+from tkinter import messagebox
 from PIL import *
 from PIL import Image, ImageTk
+import time
 
 
 window = Tk()
@@ -20,8 +22,16 @@ global dealer
 dealer = []
 global player
 player = []
-global p
-p = False
+global playerscore
+playerscore = 0
+global dealerscore
+dealerscore = 0
+global doubleopport
+doubleopport = False
+global takecount
+takecount = 0
+global wins, loses
+wins, loses = 0, 0
 
 
 #identify cards
@@ -49,37 +59,329 @@ def pick_a_card():
 
 
 #functions
+def win():
+    end = messagebox.askyesno(
+        title="Победа! Поздравляем!",
+        message="Ещё разок?")
+    if end:
+        return True
+    else:
+        return False
+
+def lose():
+    end = messagebox.askyesno(
+        title="О нет, вы всё проиграли(",
+        message="Ещё разок? (Если у вас ещё что-то осталось...)")
+    if end:
+        return True
+    else:
+        return False
+
+
+        
 def play():
-    print("игра началась")
+    playercardlabel.config(text="")
+    dealercardlabel.config(text="")
+    dealerscorelabel.config(text="У диллера нет карт.")
     betbutton.config(state='disabled')
     takebutton.config(state='active')
-    doublebutton.config(state='active')
+    doublebutton.config(state='disabled')
     stopbutton.config(state='active')
 
+def end_hand():
+    global playerscore, dealerscore, chip, bet, doubleopport, takecount, wins, loses
+    doubleopport = False
+    takecount = 0
+    betbutton.config(state='active')
+    takebutton.config(state='disabled')
+    doublebutton.config(state='disabled')
+    stopbutton.config(state='disabled')
+    playerscorelabel.config(text="У вас нет карт.")
+
+    if playerscore >= 21:
+        if playerscore == 21:
+            if dealerscore == 21:
+                chip += bet
+                bet = 0
+                playercardlabel.config(text="Ничья! {}".format(playerscore))
+                havechip.config(text = "У вас осталось {} фишек!".format(chip))
+                betchip.config(text="Вы поставили {} фишек!".format(bet))
+                playerscore = 0
+                dealerscore = 0
+                return
+            chip += bet * 3
+            bet = 0
+            playercardlabel.config(text="BlackJack! {}".format(playerscore))
+            havechip.config(text = "У вас осталось {} фишек!".format(chip))
+            betchip.config(text="Вы поставили {} фишек!".format(bet))
+            playerscore = 0
+            dealerscore = 0
+            if chip >= 100000:
+                again = win()
+                if again:
+                    chip = 10000
+                    wins += 1
+                    winlabel.config(text="Победы: {}".format(wins))
+                    havechip.config(text = "У вас осталось {} фишек!".format(chip))
+                    dealercardlabel.config(text="")
+                    dealerscorelabel.config(text="У диллера нет карт.")
+                    playercardlabel.config(text="")
+                    playerscorelabel.config(text="У вас нет карт.")
+                else:
+                    window.destroy()
+            return
+        if playerscore > 21:
+            bet = 0
+            playercardlabel.config(text="Вы проиграли! {}".format(playerscore))
+            havechip.config(text = "У вас осталось {} фишек!".format(chip))
+            betchip.config(text="Вы поставили {} фишек!".format(bet))
+            playerscore = 0
+            dealerscore = 0
+            if chip <= 0:
+                again = lose()
+                if again:
+                    chip = 10000
+                    loses += 1
+                    loselabel.config(text="Поражения: {}".format(loses))
+                    havechip.config(text = "У вас осталось {} фишек!".format(chip))
+                    dealercardlabel.config(text="")
+                    dealerscorelabel.config(text="У диллера нет карт.")
+                    playercardlabel.config(text="")
+                    playerscorelabel.config(text="У вас нет карт.")
+                else:
+                    window.destroy()
+            return
+    if dealerscore >= 21:
+        if dealerscore == 21:
+            bet = 0
+            playercardlabel.config(text="Вы проиграли! {}".format(playerscore))
+            havechip.config(text = "У вас осталось {} фишек!".format(chip))
+            betchip.config(text="Вы поставили {} фишек!".format(bet))
+            playerscore = 0
+            dealerscore = 0
+            if chip <= 0:
+                again = lose()
+                if again:
+                    chip = 10000
+                    loses += 1
+                    loselabel.config(text="Поражения: {}".format(loses))
+                    havechip.config(text = "У вас осталось {} фишек!".format(chip))
+                    dealercardlabel.config(text="")
+                    dealerscorelabel.config(text="У диллера нет карт.")
+                    playercardlabel.config(text="")
+                    playerscorelabel.config(text="У вас нет карт.")
+                else:
+                    window.destroy()
+            return
+        if dealerscore > 21:
+            chip += bet * 2
+            bet = 0
+            playercardlabel.config(text="Вы выиграли! {}".format(playerscore))
+            havechip.config(text = "У вас осталось {} фишек!".format(chip))
+            betchip.config(text="Вы поставили {} фишек!".format(bet))
+            playerscore = 0
+            dealerscore = 0
+            if chip >= 100000:
+                again = win()
+                if again:
+                    chip = 10000
+                    wins += 1
+                    winlabel.config(text="Победы: {}".format(wins))
+                    havechip.config(text = "У вас осталось {} фишек!".format(chip))
+                    dealercardlabel.config(text="")
+                    dealerscorelabel.config(text="У диллера нет карт.")
+                    playercardlabel.config(text="")
+                    playerscorelabel.config(text="У вас нет карт.")
+                else:
+                    window.destroy()
+            return
+    if playerscore > dealerscore:
+        chip += bet * 2
+        bet = 0
+        playercardlabel.config(text="Вы выиграли! {}".format(playerscore))
+        havechip.config(text = "У вас осталось {} фишек!".format(chip))
+        betchip.config(text="Вы поставили {} фишек!".format(bet))
+        playerscore = 0
+        dealerscore = 0
+        if chip >= 100000:
+            again = win()
+            if again:
+                chip = 10000
+                wins += 1
+                winlabel.config(text="Победы: {}".format(wins))
+                havechip.config(text = "У вас осталось {} фишек!".format(chip))
+                dealercardlabel.config(text="")
+                dealerscorelabel.config(text="У диллера нет карт.")
+                playercardlabel.config(text="")
+                playerscorelabel.config(text="У вас нет карт.")
+            else:
+                window.destroy()
+        return
+    elif playerscore < dealerscore:
+        bet = 0
+        playercardlabel.config(text="Вы проиграли! {}".format(playerscore))
+        havechip.config(text = "У вас осталось {} фишек!".format(chip))
+        betchip.config(text="Вы поставили {} фишек!".format(bet))
+        playerscore = 0
+        dealerscore = 0
+        if chip <= 0:
+            again = lose()
+            if again:
+                chip = 10000
+                loses += 1
+                loselabel.config(text="Поражения: {}".format(loses))
+                havechip.config(text = "У вас осталось {} фишек!".format(chip))
+                dealercardlabel.config(text="")
+                dealerscorelabel.config(text="У диллера нет карт.")
+                playercardlabel.config(text="")
+                playerscorelabel.config(text="У вас нет карт.")
+            else:
+                window.destroy()
+        return
+    elif playerscore == dealerscore:
+        chip += bet
+        bet = 0
+        playercardlabel.config(text="Ничья! {}".format(playerscore))
+        havechip.config(text = "У вас осталось {} фишек!".format(chip))
+        betchip.config(text="Вы поставили {} фишек!".format(bet))
+        playerscore = 0
+        dealerscore = 0
+        return
+
+            
 def take_card():
-    global player
-    player.append(pick_a_card())
-    print(player)
+    global player, playerscore, doubleopport, takecount
+    winorloselabel.config(text="")
+    takecount += 1
+    doubleopport = True
+    if takecount >= 2:
+        doubleopport = False
+    if doubleopport:
+        doublebutton.config(state='active')
+    if not doubleopport:
+        doublebutton.config(state='disabled')
+    card = pick_a_card()
+    player.append(card)
+    for i in player: 
+        playercardlabel.config(text="{}".format(i))
+    if playerscore + deck[card] >= 21:
+        if playerscore + deck[card] == 21:
+            playerscore += deck[card]
+            playerscorelabel.config(text="{}".format(playerscore))
+            stop()
+        if playerscore + deck[card] > 21:
+            playerscore += deck[card]
+            playerscorelabel.config(text="{}".format(playerscore))
+            stop()
+    else:
+        playerscore += deck[card]
+        playerscorelabel.config(text="{}".format(playerscore))
 
 def double_bet():
-    pass
+    global playerscore, dealerscore, chip, bet, doubleopport, isdouble
+    if bet * 2 <= chip:
+        doubleopport = False
+        card = pick_a_card()
+        player.append(card)
+        playerscore += deck[card]
+        chip -= bet
+        bet += bet
+        havechip.config(text = "У вас осталось {} фишек!".format(chip))
+        betchip.config(text="Вы поставили {} фишек!".format(bet))
+        stop()
+    else:
+        winorloselabel.config(text="Вы не можете поставить больше, чем у вас есть!")
+
+
+def stop():
+    global dealer, dealerscore
+
+    taken = "||"
+    card = pick_a_card()
+    dealer.append(card)
+    dealerscore += deck[card]
+    for i in dealer:
+        taken += i
+        taken += "||"
+    dealercardlabel.config(text="{}".format(taken))
+    dealerscorelabel.config(text="{}".format(dealerscore))
+
+    
+    card = pick_a_card()
+    dealer.append(card)
+    dealerscore += deck[card]
+    taken = "||"
+    for i in dealer:
+        taken += i
+        taken += "||"
+    dealercardlabel.config(text="{}".format(taken))
+    dealerscorelabel.config(text="{}".format(dealerscore))
+
+    
+    while dealerscore < 16:
+        card = pick_a_card()
+        dealer.append(card)
+        dealerscore += deck[card]
+        taken = "||"
+        for i in dealer:
+            taken += i
+            taken += "||"
+        dealercardlabel.config(text="{}".format(taken))
+        dealerscorelabel.config(text="{}".format(dealerscore))
+    end_hand()
 
 def do_bet():
     global chip, bet
-    if int(text.get(1.0, END)) <= chip:
-        chip -= int(text.get(1.0, END))
-        bet = int(text.get(1.0, END))
-        text.delete(1.0, END)
-        havechip.config(text = "У вас осталось {} фишек!".format(chip))
-        betchip.config(text="Вы поставили {} фишек!".format(bet))
-        play()
+    try:
+        field = int(text.get(1.0, END))
+    except:
+        winorloselabel.config(text="Введите число!")        
+        return
+
+    if int(text.get(1.0, END)) > 0:
+        winorloselabel.config(text="")   
+        if int(text.get(1.0, END)) <= chip:
+            chip -= int(text.get(1.0, END))
+            bet = int(text.get(1.0, END))
+            text.delete(1.0, END)
+            havechip.config(text = "У вас осталось {} фишек!".format(chip))
+            betchip.config(text="Вы поставили {} фишек!".format(bet))
+            play()
+        else:
+            winorloselabel.config(text="Вы не можете поставить больше, чем у вас есть!")
+    else:
+        winorloselabel.config(text="Вы не можете поставить меньше чем 1 фишку!")
+
 
 #interface block
 havechip = Label(width=30, heigh=4, text="У вас осталось {} фишек!".format(chip))
 havechip.pack(anchor=NW)
-
 betchip = Label(width=30, heigh=4, text="Вы поставили {} фишек!".format(bet))
 betchip.pack(anchor=NW)
+
+
+dealerframe = Frame()
+dealerframe.pack(anchor=N)
+dealerview = Label(dealerframe, width=30, text="ДИЛЛЕР:")
+dealerview.pack(anchor=N)
+blanklabel = Label(dealerframe, width=30, height = 1, text="")
+blanklabel.pack()
+
+
+scoreframe = Frame()
+scoreframe.pack(anchor=N)
+dealercardlabel = Label(scoreframe, width=800, text="")
+dealercardlabel.pack(anchor=N)
+dealerscorelabel = Label(scoreframe, width=30, text="У диллера нет карт.")
+dealerscorelabel.pack(anchor=N)
+
+winorloselabel = Label(scoreframe, width=800, height = 24, text="")
+winorloselabel.pack()
+
+playercardlabel = Label(scoreframe, width=30, text="")
+playercardlabel.pack(anchor=S)
+playerscorelabel = Label(scoreframe, width=30, text="У вас нет карт.")
+playerscorelabel.pack(anchor=S)
 
 
 frame = Frame()
@@ -90,12 +392,16 @@ betbutton = Button(frame, text="Ставка", command=do_bet, height=5, width=3
 betbutton.pack(side=LEFT)
 takebutton = Button(frame, text="Взять", command=take_card, height=5, width=30, state='disabled')
 takebutton.pack(side=LEFT)
-doublebutton = Button(frame, text="Удвоить", command=pick_a_card, height=5, width=30, state='disabled')
+doublebutton = Button(frame, text="Удвоить", command=double_bet, height=5, width=30, state='disabled')
 doublebutton.pack(side=LEFT)
-stopbutton = Button(frame, text="Стоп", command=pick_a_card, height=5, width=30, state='disabled')
+stopbutton = Button(frame, text="Стоп", command=stop, height=5, width=30, state='disabled')
 stopbutton.pack(side=LEFT)
 
+winorlosescore = Frame(frame)
+winorlosescore.pack(anchor=SW)
+winlabel = Label(frame, width=30, text="Победы: {}".format(wins))
+winlabel.pack()
+loselabel = Label(frame, width=30, text="Поражения: {}".format(loses))
+loselabel.pack()
 
 
-
-window.mainloop()
